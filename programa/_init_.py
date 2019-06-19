@@ -48,9 +48,26 @@ print("Configuracao de regiao: ", confRegiao)
 print("\n")
 print("demandaRegiao: ", demandaRegiao)
 
-#>>> matriz = [ [1, 2, 3, 4], [1, 2, 3, 4] ]
-# >>> matriz[0][0]
-# 1
-# >>> matriz[0][0] = 3
-# >>> matriz[0][0]
-#3
+print("\n-------------------------------\n")
+#Matriz distancia--------------------------------------------------
+def dist (xA, xB, yA, yB):
+    distancia = (((xA - xB) ** 2) + ((yA - yB) ** 2)) ** (1/2)
+    return distancia
+
+distMatriz = []
+for nPtoA in range(len(coordenandas)):
+    linha = []
+    for nPtoB in range(len(coordenandas)):
+        xA = coordenandas[nPtoA][1]
+        xB = coordenandas[nPtoB][1]
+        yA = coordenandas[nPtoA][2]
+        yB = coordenandas[nPtoB][2]
+
+        calcDistancia = round(dist(xA,xB,yA,yB), 3)
+
+        linha.append(calcDistancia)
+
+    distMatriz.append(linha)
+
+for linha in distMatriz:
+    print (linha)
