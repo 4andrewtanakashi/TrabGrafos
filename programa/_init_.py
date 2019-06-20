@@ -1,5 +1,16 @@
 import re
-#import igraph
+class Vertice:
+    def __init__(self, pX, pY, peso):
+        self.pX = pX
+        self.pY = pY
+        self.peso = peso
+    
+    def getPeso(self):
+        return self.peso
+    
+    def getCoordenada(self):
+        return (self.pX, self.pY)
+
 
 robotMap = []
 coordenandas = []
@@ -114,3 +125,7 @@ for i in range(len(coordenandas)):
 grafo.vs["name"] = nome
 
 plot(grafo, layout = layout, bbox = (1000, 1000), margin = 0)
+
+a = Vertice(5, 5, 50)
+print (a.getCoordenada())
+print (a.getPeso())
