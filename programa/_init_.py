@@ -1,4 +1,5 @@
 import re
+
 class Vertice:
     def __init__(self, pX, pY, peso):
         self.pX = pX
