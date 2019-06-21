@@ -1,43 +1,20 @@
-class Vertice:
-    def __init__(self, pX, pY, regiao, id):
-        self.pX = pX
-        self.pY = pY
-        self.regiao = regiao
-        self.id = id
-    
-    def getCoordenadas(self):
-        return (self.pX, self.pY)
-
-    def getId(self):
-        return self.id
-    
-    def getRegiao(self):
-        return self.regiao
-
-class Grafo:
-    def __init__(self, arestas):
-        self.arestas = arestas
-    
-    def getAresta(self, pos):
-        return self.arestas[pos]
-
 import re
 
 class Vertice:
-    def __init__(self, pX, pY, regiao):
+    def __init__(self, pX, pY, peso):
         self.pX = pX
         self.pY = pY
-        self.regiao = regiao
+        self.peso = peso
     
-    def getRegi(self):
-        return self.regiao
+    def getPeso(self):
+        return self.peso
     
     def getCoordenada(self):
         return (self.pX, self.pY)
 
 
 robotMap = []
-coordenadas = []
+coordenandas = []
 confRegiao = [] #preencher
 demandaRegiao = []
 
@@ -56,7 +33,7 @@ with open('problema15.txt', 'r') as reader:
     while ( not ('SET_SECTION' in linha) ):
         numbers = re.findall(r"[-+]?\d*\.\d+|\d+", linha )
         numbers = [int(i) for i in numbers]
-        coordenadas.append(numbers)
+        coordenandas.append(numbers)
         linha = reader.readline()
 
     linha = reader.readline()
@@ -80,7 +57,7 @@ print("Detalhes: ", robotMap)
 print("\n")
 
 print("coordenadas:")
-for linha in coordenadas:
+for linha in coordenandas:
     print(linha)
 
 print("\n")
@@ -101,67 +78,66 @@ def dist (xA, xB, yA, yB):
     return distancia
 
 distMatriz = []
-for nPtoA in range(len(coordenadas)):
+for nPtoA in range(len(coordenandas)):
     linha = []
-    for nPtoB in range(len(coordenadas)):
-        xA = coordenadas[nPtoA][1]
-        xB = coordenadas[nPtoB][1]
-        yA = coordenadas[nPtoA][2]
-        yB = coordenadas[nPtoB][2]
+    for nPtoB in range(len(coordenandas)):
+        xA = coordenandas[nPtoA][1]
+        xB = coordenandas[nPtoB][1]
+        yA = coordenandas[nPtoA][2]
+        yB = coordenandas[nPtoB][2]
 
         calcDistancia = round(dist(xA,xB,yA,yB), 3)
 
         linha.append(calcDistancia)
 
     distMatriz.append(linha)
+
+
+
+#1º Passo: Ordenação de pesos de arestas:
 for linha in distMatriz:
     for a in linha:
         print (a, end = "\t")
     print()
 
-#Criar grafo-------------------------------------------------------
+conjOrd = []
+for i in range(len(distMatriz[0])):
+    j = i + 1
+    while j < (len(distMatriz[0])):
+        conjOrd.append( (distMatriz[i][j], i, j) )
+        j = j+1
+conjOrd.sort(key=lambda x: x[0])
 
+print("Ordenação de peso: ", conjOrd)
 
+#2º Selecionar arestas de menor peso e não coloca vértices pertencentes ao mesmo conjunto 
+#e elimina vertices que estão com o mesmo peso .
+conjVer = []
+conjPosAres = []
+k = 0
+insere = 0
+while (len(conjVer) != robotMap[0]) and (k < len(conjOrd)):
 
-#Desenhar grafo----------------------------------------------------
-from igraph import *
+    u = 0
+    for i in range(2):
+        for j in range(len(conjVer)):
+            if (conjOrd[k][i] == conjVer[j]):
+                insere += 1
+                u = conjVer[j]
 
-grafo = Graph.Ring(len(coordenadas), circular=False)
+    if (insere == 0):
+        conjVer.append(conjOrd[k][1])
+        conjVer.append(conjOrd[k][2])
+        conjPosAres.append(k)
+    elif (insere == 1):
+        conjVer.append(u)
+        conjPosAres.append(k)
+        insere = 0
 
-layout = []
-for vertice in coordenadas:
-    x = vertice[1]
-    y = vertice[2]
-    layout.append((x,y))
+    k = k+1
 
-arestas = []
-for i in range(len(coordenadas)):
-    j = i + 1 
-    while j < len(coordenadas):
-        arestas.append((i,j))
-        j += 1
+print("\n \n ")
+print(conjVer)
 
-grafo.add_edges(arestas)
-
-nome = []
-for i in range(len(coordenadas)):
-    nome.append(i + 1)
-
-grafo.vs["name"] = nome
-
-#plot(grafo, layout = layout, bbox = (1000, 1000), margin = 0)
-
-#Ordenacao Demanda--------------------------------------------
-"""
-    Faz ordenação  das regioes: da regiao com menor demada
-    para a maior
-"""
-demandaTupla = []
-for i in demandaRegiao:
-    a = (i[0],i[1])
-    demandaTupla.append(a)
-
-demandaTupla.sort(key=lambda x: x[1])
-demandaTupla.reverse()
-print()
-print (demandaTupla)
+for i in range(len(conjPosAres)):
+    print("Arestas: ", "(", conjOrd[conjPosAres[i]][1], ",", conjOrd[conjPosAres[i]][2], ")")
