@@ -1,14 +1,18 @@
 class Vertice:
-    def __init__(self, pX, pY, peso):
+    def __init__(self, pX, pY, peso, id):
         self.pX = pX
         self.pY = pY
         self.peso = peso
+        self.id = id
     
     def getPeso(self):
         return self.peso
     
-    def getCoordenada(self):
+    def getCoordenadas(self):
         return (self.pX, self.pY)
+
+    def getId(self):
+        return self.id
     
     def setPeso(self, p):
         self.peso = p
@@ -17,9 +21,11 @@ class Vertice:
         self.px = x
         self.py = y
 
-class Grafo(Vertice, object):
 
-    id = 1
+
+class Grafo(object):
+
+    contadorId = 1
 
     def __init__(self):
         self.arestas = []
@@ -31,10 +37,10 @@ class Grafo(Vertice, object):
         self.cardV = self.cardV + qntVer
         i = 0
         while i < qntVer:
-            self.vertices.append(super(Grafo, self).__init__(0,0,0))
-            self.id = self.id
+            self.vertices.append(Vertice(0, 0, 0, self.contadorId))
+            
             i += 1
-            self.id += 1
+            self.contadorId += 1
         
     
     def addAresta (self, arestas):
@@ -42,25 +48,24 @@ class Grafo(Vertice, object):
             self.arestas.append(i)
 
 
-    def getVertice (self, id):
-        return self.vertices[id]
+    def getVertice (self, contadorId):
+        return self.vertices[contadorId]
 
-    def setV (self, id, x, y, peso):
-        self.vertices[id].setPeso(peso)
-        self.vertices[id].setCoordenadas(x, y)
+    def setV (self, contadorId, x, y, peso):
+        self.vertices[contadorId].setPeso(peso)
+        self.vertices[contadorId].setCoordenadas(x, y)
 
     def _print_(self):
-        # print(self.vertices)
+        for i in self.vertices:
+            print("(x, y): ", i.getCoordenadas() )
+            print("id: ", i.getId() )
+            print("peso: ", i.getPeso() )
+
         print(self.arestas)
-    
 
     @classmethod
     def all(cls):
         return cls.objects
-
-    
-
-
 
 g = Grafo()
 g.addVertices(5)
