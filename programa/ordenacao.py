@@ -1,5 +1,4 @@
 #Algoritmo separa regiao para robos
-
 vetCapRobot = []
 for i in range(robotMap[1]):
     capMinimaAtingida = True
