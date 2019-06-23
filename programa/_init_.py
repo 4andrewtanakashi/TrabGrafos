@@ -170,7 +170,7 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
                 elif (( (len(demandaTupla)-1) == demanda )):
                     # print("(len(demandaTupla) < demanda): ", (len(demandaTupla) < demanda))
                     # print("(teste > robotMap[3]+1): ", (teste > robotMap[3]+1))
-                    print("somatorioDemanda: ", somatorioDemanda-demandaTupla[demanda][1])
+                    #print("somatorioDemanda: ", somatorioDemanda-demandaTupla[demanda][1])
                     capMinimaAtingida = True
                 elif (((teste - demandaTupla[demanda][1]) < robotMap[3]+1)):
                     restante = robotMap[3] - somatorioDemanda
@@ -178,8 +178,8 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
                     ind = 0
                     while (ind < (len(demandaTupla)-1) and (not satisfeito)):
                         if (demandaTupla[ind][1] <= restante):
-                            print("somatorioDemanda_ult: ", somatorioDemanda)
-                            print("Restante: ", restante, " demandaTupla[1]: ", demandaTupla[ind][1])
+                            # print("somatorioDemanda_ult: ", somatorioDemanda)
+                            # print("Restante: ", restante, " demandaTupla[1]: ", demandaTupla[ind][1])
                             somatorioDemanda += demandaTupla[ind][1]
                             regioesVisita.append(demandaTupla[ind])
                             demandaTupla.remove(demandaTupla[ind])
@@ -421,17 +421,17 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
         if (len(conjKruskall) == 1):
             krus = tuple(conjKruskall[0])
             if ( (len(krus)-1) == qntRegiao):
-                print("AQUI: ", qntRegiao)
+                # print("AQUI: ", qntRegiao)
                 agm = True
     
 
-    print("qntRegiao: ", qntRegiao)
-    print("AGM: ", conjKruskall)
-    print("Eliminados: ", conjEliminados)
-    print("Aresta Ligadas: ", conjArestasAgm)
-    conjKruskall = tuple(conjKruskall[0])
-    for i in conjKruskall:
-        print("Regiao: ", grafoG.getVerticeId(i).getRegiao())
+    # print("qntRegiao: ", qntRegiao)
+    # print("AGM: ", conjKruskall)
+    # print("Eliminados: ", conjEliminados)
+    # print("Aresta Ligadas: ", conjArestasAgm)
+    # conjKruskall = tuple(conjKruskall[0])
+    # for i in conjKruskall:
+    #     print("Regiao: ", grafoG.getVerticeId(i).getRegiao())
 
     for v in conjEliminados:
         grafoG.delVertiveId(v)
@@ -448,14 +448,16 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
         grafoG.setGrauVert(v+1, 0)
     grafoG.setArestas(arestasAgm)
 
-    print("Aresta Ligadas: ", grafoG.getConjArestas())
+    # print("Aresta Ligadas: ", grafoG.getConjArestas())
 
     for tup in conjArestasAgm:
         for v in tup:
             grafoG.aumentarGrau(v)
     
-    for i in grafoG.vertices:
-        print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
+    # for i in grafoG.vertices:
+    #     print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
+    
+    # print("Conj Aresta: ", grafoG.getConjArestas())
 
     return grafoG
 
@@ -466,20 +468,20 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
 
 def casamentoPerfeito(agm, distMatriz):
 
-    print("\n \n")
-    for i in agm.vertices:
-        print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
+    # print("\n \n")
+    # for i in agm.vertices:
+    #     print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
 
     listaVertGrauImpar = []
     for i in range(agm.getCarV()):
         if ((agm.getVertice(i).getGrau())%2 == 1 ):
-            print("Grau: ", agm.getVertice(i).getGrau(), " ", "v: ", agm.getVertice(i).getId())
             listaVertGrauImpar.append(agm.getVertice(i).getId())
 
     listaArestasDoCasa = []
-    print("TAM:", len(listaVertGrauImpar))
-    print("lista de vert impar: ", listaVertGrauImpar)
-    for i in range(len(listaVertGrauImpar)-2):
+    # print("TAM:", len(listaVertGrauImpar))
+    # print("lista de vert impar: ", listaVertGrauImpar)
+    i = 0
+    while ( (listaVertGrauImpar != []) and (i < len(listaVertGrauImpar)) ) :
         menorValor = 0
         comparador = 0
         j = i+1
@@ -496,10 +498,11 @@ def casamentoPerfeito(agm, distMatriz):
         vert = listaVertGrauImpar[pos]
         listaArestasDoCasa.append((menorValor, u, vert))
         agm.aumentarGrau(u)
-        agm.aumentarGrau(listaVertGrauImpar[pos])
+        agm.aumentarGrau(vert)
         listaVertGrauImpar.remove(u)
         listaVertGrauImpar.remove(vert)
     
+    print("\n \n")
     print("Arestas: ", listaArestasDoCasa)
     
     for a in listaArestasDoCasa:
@@ -605,7 +608,6 @@ def main():
             print (a, end = "\t")
         print()
     '''
-    print("Peso: ", distMatriz[79][27])
 
     #Criar grafo-------------------------------------------------------
     g = Grafo()
@@ -666,8 +668,8 @@ def main():
     agm = []
     for i in range(len(subG)):
         agm.append(kruskall(subG[i], robotMap, confRegiao, vetQntReg[i], distMatriz))
-
-    casamentoPerfeito(agm[0], distMatriz)
+        casamentoPerfeito(agm[i], distMatriz)
+    
 
     #for i in range(len(subG)):
     #    subG[i] = kruskall(subG[i])
