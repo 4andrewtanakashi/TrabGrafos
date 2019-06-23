@@ -1,9 +1,10 @@
 class Vertice:
-    def __init__(self, pX, pY, id):
+    def __init__(self, pX, pY, id, gr):
         self.pX = pX
         self.pY = pY
         self.regiao = 0
         self.id = id
+        self.grau = gr
 
     def setRegiao(self, regiao):
         self.regiao = regiao
@@ -16,7 +17,12 @@ class Vertice:
     
     def getRegiao(self):
         return self.regiao
-
+    
+    def setGrau(self, d):
+        self.grau = d
+    
+    def getGrau(self):
+        return self.grau
 
 class Grafo(Vertice):
     def __init__(self):
@@ -33,8 +39,8 @@ class Grafo(Vertice):
     def getConjArestas(self):
         return self.arestas
 
-    def addVertice(self, x, y, id):
-        self.vertices.append(Vertice(x, y, id))
+    def addVertice(self, x, y, id, gr):
+        self.vertices.append(Vertice(x, y, id, gr))
         self.cardV += 1
     
     def addVerticePronto(self, v):
@@ -53,11 +59,32 @@ class Grafo(Vertice):
         for v in self.vertices:
             if (v.getId() == id):
                 return v
-            
+        #print("AQUI: ", id) 
         return False
     
     def getCarV(self):
         return self.cardV
+    
+    def delVertiveId(self, id):
+        pos = -1
+        i = 0
+        while ((i < len(self.vertices)) and (pos == -1)):
+            if (self.vertices[i].getId() == id):
+                pos = i
+            i += 1
+        if (pos != -1):
+            del self.vertices[pos]
+            self.cardV -= 1
+
+    def setGrauVert(self, id, grau):
+        self.getVerticeId(id).setGrau(grau)
+    
+    def aumentarGrau(self, id):
+        grau = self.getVerticeId(id).getGrau()
+        grau += 1
+        self.getVerticeId(id).setGrau(grau)
+
+
 
 # class Grafo:
 #     def __init__(self, arestas):
@@ -117,9 +144,6 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
     '''
 
     #Algoritmo separa regiao para robos
-    # if (robotMap[1] == 1):
-    #     vetCapRobot = demandaTupla
-    # else:
     vetCapRobot = []
     if (robotMap[1] == 1):
         vetCapRobot.append(demandaTupla)
@@ -131,8 +155,6 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
             demanda = 0
 
             # while capMinimaAtingida and len(demandaTupla) > demanda:
-        
-            
             while ( (len(demandaTupla) > demanda)  and (not capMinimaAtingida)) :
                 teste = somatorioDemanda + demandaTupla[demanda][1]
                 if (teste <= capMinRobo):
@@ -148,14 +170,14 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
             vetCapRobot.append(regioesVisita)
 
     
-    print (vetCapRobot)
+    #print (vetCapRobot)
 
 
     #Montando os subgrafos:
     subConjG = []
     for i in range(robotMap[1]):
         subConjG.append(Grafo())
-        subConjG[i].addVerticePronto(g.getVertice(1))
+        subConjG[i].addVerticePronto(g.getVertice(1)) #Todos os subgrafos recebem o v1
         subConjG[i].setArestas(g.getConjArestas())
 
     j = 0
@@ -165,6 +187,7 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
             chave = reg[k][0]-1
             while i < (len(confRegiao[chave])-1):
                 subConjG[j].addVerticePronto(g.getVertice(confRegiao[chave][i]))
+                subConjG[j].setGrauVert(confRegiao[chave][i], subConjG[j].cardV)
                 i += 1
         j += 1
 
@@ -195,17 +218,22 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
     '''
     print("TAM: ", len(subConjG))
     '''
-    return subConjG
+    vetQntRegiao = []
+    for robo in vetCapRobot:
+        vetQntRegiao.append(len(robo))
+
+    return (subConjG, vetQntRegiao)
 
 
 
 
 ####################################################################Passo 1: AGM Kruskall
-def kruskall(grafoG, robotMap, confRegiao):
+def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
 
     #1º Passo: Ordenação de pesos de arestas:
     grafoG.getConjArestas().sort(key=lambda x: x[0])
-    print(grafoG.getConjArestas())
+    #print(grafoG.getConjArestas())
+
     #copyMatriz = grafoG.getConjArestas()
     #conjOrd = []
     #for i in range(len(copyMatriz[0])):
@@ -221,12 +249,16 @@ def kruskall(grafoG, robotMap, confRegiao):
     #e elimina vertices que estão com o mesma regiao .
     conjKruskall = []
     conjEliminados = []
-    for tripla in grafoG.getConjArestas():
-
+    conjArestasAgm = []
+    agm = False
+    count = 0
+    while ( (count < len(grafoG.getConjArestas())) and (agm == False)):
+        tripla = grafoG.getConjArestas()[count]
         #1ª Consulta u.regiao != v.regiao
+        
         if ( (grafoG.getVerticeId(tripla[1]).getRegiao()) != (grafoG.getVerticeId(tripla[2]).getRegiao()) ):
             naoEstaPresente = True
-
+            
             for elim in conjEliminados:
                 if (tripla[1] == elim):
                     naoEstaPresente = False
@@ -236,88 +268,162 @@ def kruskall(grafoG, robotMap, confRegiao):
                     naoEstaPresente = False
 
             #2ª u ou v estao como eliminados
-            if (naoEstaPresente == False):
+            if (naoEstaPresente == True):
                 estaKruskall = 0
-                verDaTupla = 0
+                posicaoTupla = None
+                posicaoTupla2 = None
                 verticeNaoIncluido = 0
-
-                for tupla in conjKruskall:
-                    for verTup in tupla:
+                
+                tupla1 = 0
+                posTupKrus = 0
+                while (posTupKrus < len(conjKruskall)) :
+                    for verTup in conjKruskall[posTupKrus]:
                         if (tripla[1] == verTup):
                             estaKruskall += 1
-                            verDaTupla = tripla[2]
-                            verticeNaoIncluido = tripla[1]
+                            posicaoTupla = posTupKrus
+                            verticeNaoIncluido = tripla[2]
+                            tupla1 = conjKruskall[posTupKrus]
+                    posTupKrus += 1
 
-                for tupla in conjKruskall:
-                    for verTup in tupla:
+                tupla2 = 1
+                posTupKrus = 0
+                while (posTupKrus < len(conjKruskall)) :
+                    for verTup in conjKruskall[posTupKrus]:
                         if (tripla[2] == verTup):
                             estaKruskall += 1
-                            verDaTupla = tripla[1]
-                            verticeNaoIncluido = tripla[2]
+                            posicaoTupla2 = posTupKrus
+                            verticeNaoIncluido = tripla[1]
+                            tupla2 = conjKruskall[posTupKrus]
+                    posTupKrus += 1
+                
+                if (tupla1 == tupla2):
+                    estaKruskall += 1
 
                 #3º se estao no conjunto Kruskall:
-                if (krus <= 1) :
+                if (estaKruskall <= 2) :
                     #Em caso dos dois vertices nao estarem subconjunto
                     if (estaKruskall == 0):
-                        uId = grafoG.getVerticeId(tripla[1]).getId()
-                        vId = grafoG.getVerticeId(tripla[2]).getId()
-                        conjKruskall.append((uId, vId))
+                        conjKruskall.append((tripla[1], tripla[2]))
+                        conjArestasAgm.append((tripla[1], tripla[2]))
+                        
 
                         regiao1 = grafoG.getVerticeId(tripla[1]).getRegiao()
                         regiao2 = grafoG.getVerticeId(tripla[2]).getRegiao()
                         
+                        regiao1 -= 1 #Pega os ids certos, mas para acessar o vetor e pos gaussiano
+                        regiao2 -= 1 #Pega os ids certos, mas para acessar o vetor e pos gaussiano
+
+                        unicaTupla = conjKruskall[0]
+                        t = 1
+                        while (t < len(conjKruskall)):
+                            unicaTupla = unicaTupla + conjKruskall[t]
+                            t += 1
+
                         i = 1
                         while i < (len(confRegiao[regiao1])-1):
                             idEli = confRegiao[regiao1][i]
-                            conjEliminados.append(idEli)
+                            if ((tripla[1] != idEli) and ( not (idEli in conjEliminados) ) and (not (idEli in unicaTupla) )):
+                                #print("idEli1_0: ", idEli, "verticeNaoIncluido: ", tripla[1], "regiao: ", regiao1)
+                                conjEliminados.append(idEli)
                             i += 1
-                        
+
                         i = 1
                         while i < (len(confRegiao[regiao2])-1):
                             idEli = confRegiao[regiao2][i]
-                            conjEliminados.append(idEli)
+                            if (tripla[2] != idEli and ( not (idEli in conjEliminados)) and (not (idEli in unicaTupla) )):
+                                #print("idEli2_0: ", idEli, "verticeNaoIncluido: ", tripla[2], "regiao: ", regiao2)
+                                conjEliminados.append(idEli)
                             i += 1
 
-                    #Em caso de um vertice nao estar subconjunto
-                    #PAROU AQUI !!!!
-                    else :
-                        posTupla = 0
-                        for conjLig in conjKruskall:
-                            i = 0
-                            for ele in len(conjLig) :
-                                if (conjLig[i] == verDaTupla):
-                                    posTupla = i
+                    #Em caso de um vertice nao estar subconjunto:
+                    if (estaKruskall == 1) :
+                        
+                        if (not (posicaoTupla is None)):
+                            # print("posicaoTupla: ", posicaoTupla)
+                            # print("posicaoTupla2: ", posicaoTupla2)
+                            # print("conjKruskall[posicaoTupla2] + (verticeNaoIncluido,): ", conjKruskall, verticeNaoIncluido)
+                            tupTemp = conjKruskall[posicaoTupla] + (verticeNaoIncluido,)
+                            del conjKruskall[posicaoTupla]
+                            conjKruskall.append(tupTemp)
+                            conjArestasAgm.append((tripla[1], verticeNaoIncluido))
 
-                        conjKruskall.append(arestaComparacao) 
-                        regiao = grafoG.getVerticeId(arestaComparacao).getRegiao()
+                        else:
+                            # print("posicaoTupla_2: ", posicaoTupla)
+                            # print("posicaoTupla2_2: ", posicaoTupla2)
+                            # print("conjKruskall[posicaoTupla2] + (verticeNaoIncluido,)_2: ", conjKruskall, verticeNaoIncluido)
+                            tupTemp = conjKruskall[posicaoTupla2] + (verticeNaoIncluido,)
+                            del conjKruskall[posicaoTupla2]
+                            conjKruskall.append(tupTemp)
+                            conjArestasAgm.append((tripla[2], verticeNaoIncluido ))
 
+                        unicaTupla = conjKruskall[0]
+                        t = 1
+                        while (t < len(conjKruskall)):
+                            unicaTupla = unicaTupla + conjKruskall[t]
+                            t += 1
 
+                        regiao = grafoG.getVerticeId(verticeNaoIncluido).getRegiao()
+                        regiao -= 1 #Pega os ids certos, mas para acessar o vetor e pos gaussiano
                         i = 1
                         while i < (len(confRegiao[regiao])-1):
                             idEli = confRegiao[regiao][i]
-                            conjEliminados.append(idEli)
+                            if (verticeNaoIncluido != idEli and (not (idEli in conjEliminados)) and (not (idEli in unicaTupla) )):
+                                #print("idEli_1: ", idEli, "verticeNaoIncluido: ", verticeNaoIncluido, "regiao: ", regiao)
+                                conjEliminados.append(idEli)
                             i += 1
-#    k = 0
-#    insere = 0
-#    while (len(conjVer) != robotMap[0]) and (k < len(conjOrd)):
+                    
+                    #Em caso dos vertices estarem em dois conjuntos diferentes (uniao de conjunto)
+                    if (estaKruskall == 2):
+                        #print("subConj: ", conjKruskall, "pos2: ", posicaoTupla2, " pos: ", posicaoTupla)
+                        conjArestasAgm.append((tripla[1], tripla[2]))
 
-#        u = 0
-#        for i in range(2):
-#            for j in range(len(conjVer)):
-#                if (conjOrd[k][i] == conjVer[j]):
-#                    insere += 1
-#                    u = conjVer[j]
+                        tupTemp = conjKruskall[posicaoTupla] + conjKruskall[posicaoTupla2]
+                        del conjKruskall[posicaoTupla]
+                        del conjKruskall[posicaoTupla2]
+                        conjKruskall.append(tupTemp)
+            
+        count += 1
 
-#        if (insere == 0):
-#            conjVer.append(conjOrd[k][1])
-#            conjVer.append(conjOrd[k][2])
-#            conjPosAres.append(k)
-#        elif (insere == 1):
-#            conjVer.append(u)
-#            conjPosAres.append(k)
-#            insere = 0
+        if (len(conjKruskall) == 1):
+            krus = tuple(conjKruskall[0])
+            if ( (len(krus)-1) == qntRegiao):
+                agm = True
+    
 
-       # k = k+1 
+    print("qntRegiao: ", qntRegiao)
+    print("AGM: ", conjKruskall)
+    print("Eliminados: ", conjEliminados)
+    print("Aresta Ligadas: ", conjArestasAgm)
+    conjKruskall = tuple(conjKruskall[0])
+    for i in conjKruskall:
+        print("Regiao: ", grafoG.getVerticeId(i).getRegiao())
+
+    for v in conjEliminados:
+        grafoG.delVertiveId(v)
+
+
+    arestasAgm = []
+    for eleTupla in conjArestasAgm:
+        u = eleTupla[0]
+        v = eleTupla[1]
+        u -= 1 #Para acessar Id no grafo é direto, mas acessar em uma ED é gaussiano
+        v -= 1 #Para acessar Id no grafo é direto, mas acessar em uma ED é gaussiano
+        arestasAgm.append( (distMatriz[u][v], u+1, v+1) )
+        grafoG.setGrauVert(u+1, 0)
+        grafoG.setGrauVert(v+1, 0)
+    grafoG.setArestas(arestasAgm)
+
+    print("Aresta Ligadas: ", grafoG.getConjArestas())
+
+    for tup in conjArestasAgm:
+        for v in tup:
+            grafoG.aumentarGrau(v)
+    
+    for i in grafoG.vertices:
+        print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
+
+    return grafoG
+
 
 ##################################################################################################################
 
@@ -421,7 +527,7 @@ def main():
 
     #set id e coordenadas dos vertices:
     for item in coordenadas:
-        g.addVertice(item[1], item[2], item[0])
+        g.addVertice(item[1], item[2], item[0], robotMap[0])
 
     #set Regiao de cada vertice:
     for lista in confRegiao:
@@ -468,8 +574,11 @@ def main():
 
     #plot(grafo, layout = layout, bbox = (1000, 1000), margin = 0)
 
-    subG = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)
-    kruskall(subG[0], robotMap, confRegiao)
+    subG = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)[0]
+    vetQntReg = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)[1]
+
+    agm = kruskall(subG[0], robotMap, confRegiao, vetQntReg[0], distMatriz)
+
     #for i in range(len(subG)):
     #    subG[i] = kruskall(subG[i])
 
