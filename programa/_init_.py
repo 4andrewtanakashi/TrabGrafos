@@ -32,6 +32,12 @@ class Grafo(Vertice):
 
     def setArestas(self, matriz):
         self.arestas = matriz
+    
+    def setAresta(self, a):
+        self.arestas.append(a)
+    
+    def delAresta(self, a):
+        self.arestas.remove(a)
 
     def getAresta(self, x, y):
         return self.arestas[x][y]
@@ -83,8 +89,6 @@ class Grafo(Vertice):
         grau = self.getVerticeId(id).getGrau()
         grau += 1
         self.getVerticeId(id).setGrau(grau)
-
-
 
 # class Grafo:
 #     def __init__(self, arestas):
@@ -456,6 +460,54 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
     return grafoG
 
 
+
+###############################################################################################################
+#                                   [2ºPasso Casamento Perfeito]:
+
+def casamentoPerfeito(agm, distMatriz):
+
+    print("\n \n")
+    for i in agm.vertices:
+        print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
+
+    listaVertGrauImpar = []
+    for i in range(agm.getCarV()):
+        if ((agm.getVertice(i).getGrau())%2 == 1 ):
+            print("Grau: ", agm.getVertice(i).getGrau(), " ", "v: ", agm.getVertice(i).getId())
+            listaVertGrauImpar.append(agm.getVertice(i).getId())
+
+    listaArestasDoCasa = []
+    print("TAM:", len(listaVertGrauImpar))
+    print("lista de vert impar: ", listaVertGrauImpar)
+    for i in range(len(listaVertGrauImpar)-2):
+        menorValor = 0
+        comparador = 0
+        j = i+1
+        pos = 0
+        u = listaVertGrauImpar[i]
+        while j < len(listaVertGrauImpar):
+            v = listaVertGrauImpar[j]
+            comparador = distMatriz[u-1][v-1] #Posicao de matriz gaussiana
+            if (menorValor < comparador):
+                pos = j
+                menorValor = comparador
+            j += 1
+
+        vert = listaVertGrauImpar[pos]
+        listaArestasDoCasa.append((menorValor, u, vert))
+        agm.aumentarGrau(u)
+        agm.aumentarGrau(listaVertGrauImpar[pos])
+        listaVertGrauImpar.remove(u)
+        listaVertGrauImpar.remove(vert)
+    
+    print("Arestas: ", listaArestasDoCasa)
+    
+    for a in listaArestasDoCasa:
+        agm.setAresta(a)
+    
+    print("ArestasAgm: ", agm.getConjArestas())
+
+
 ##################################################################################################################
 
 
@@ -612,6 +664,8 @@ def main():
     agm = []
     for i in range(len(subG)):
         agm.append(kruskall(subG[i], robotMap, confRegiao, vetQntReg[i], distMatriz))
+
+    casamentoPerfeito(agm[0], distMatriz)
 
     #for i in range(len(subG)):
     #    subG[i] = kruskall(subG[i])
