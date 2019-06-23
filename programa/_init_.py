@@ -128,20 +128,20 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
 
     demandaTupla.sort(key=lambda x: x[1])
     demandaTupla.reverse()
-    '''
+    
     # print()
     # print ("demandaTupla: ", demandaTupla)
-    '''
+    
 
-    somatorio = 0
-    for i in demandaRegiao:
-        somatorio += i[1]
-    capMinRobo = math.ceil(somatorio/robotMap[1])
+    # somatorio = 0
+    # for i in demandaRegiao:
+    #     somatorio += i[1]
+    #capMinRobo = math.ceil(somatorio/robotMap[1])
 
-    '''
-    print("Somatorio: ", somatorio)
-    print("Capacidade Minima veiculo: ", capMinRobo )
-    '''
+    
+    #print("Somatorio: ", somatorio)
+    # print("Capacidade Minima veiculo: ", capMinRobo )
+    
 
     #Algoritmo separa regiao para robos
     vetCapRobot = []
@@ -157,20 +157,38 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
             # while capMinimaAtingida and len(demandaTupla) > demanda:
             while ( (len(demandaTupla) > demanda)  and (not capMinimaAtingida)) :
                 teste = somatorioDemanda + demandaTupla[demanda][1]
-                if (teste <= capMinRobo):
+                if (teste <= robotMap[3]):
                     somatorioDemanda += demandaTupla[demanda][1]
                     regioesVisita.append(demandaTupla[demanda])
                     del(demandaTupla[demanda])
                     demanda -= 1
-                elif ((teste > capMinRobo+1) or (len(demandaTupla) < demanda)):
+                    #(teste > robotMap[3]+1) or 
+                elif (( (len(demandaTupla)-1) == demanda )):
+                    # print("(len(demandaTupla) < demanda): ", (len(demandaTupla) < demanda))
+                    # print("(teste > robotMap[3]+1): ", (teste > robotMap[3]+1))
+                    print("somatorioDemanda: ", somatorioDemanda-demandaTupla[demanda][1])
                     capMinimaAtingida = True
-
+                elif (((teste - demandaTupla[demanda][1]) < robotMap[3]+1)):
+                    restante = robotMap[3] - somatorioDemanda
+                    satisfeito = False
+                    ind = 0
+                    while (ind < (len(demandaTupla)-1) and (not satisfeito)):
+                        if (demandaTupla[ind][1] <= restante):
+                            print("somatorioDemanda_ult: ", somatorioDemanda)
+                            print("Restante: ", restante, " demandaTupla[1]: ", demandaTupla[ind][1])
+                            somatorioDemanda += demandaTupla[ind][1]
+                            regioesVisita.append(demandaTupla[ind])
+                            demandaTupla.remove(demandaTupla[ind])
+                            demanda -= 1
+                            satisfeito = True
+                        ind += 1
                 demanda += 1
+                
 
             vetCapRobot.append(regioesVisita)
 
     
-    #print (vetCapRobot)
+    print ("vetRobo: ", vetCapRobot)
 
 
     #Montando os subgrafos:
@@ -252,10 +270,10 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
     conjArestasAgm = []
     agm = False
     count = 0
+
     while ( (count < len(grafoG.getConjArestas())) and (agm == False)):
         tripla = grafoG.getConjArestas()[count]
         #1ª Consulta u.regiao != v.regiao
-        
         if ( (grafoG.getVerticeId(tripla[1]).getRegiao()) != (grafoG.getVerticeId(tripla[2]).getRegiao()) ):
             naoEstaPresente = True
             
@@ -282,6 +300,8 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                             estaKruskall += 1
                             posicaoTupla = posTupKrus
                             verticeNaoIncluido = tripla[2]
+                            # print("tripla[1],tripla[2], verTup: ", tripla[1], tripla[2], verTup)
+                            # print("posicaoTupla: ", posicaoTupla)
                             tupla1 = conjKruskall[posTupKrus]
                     posTupKrus += 1
 
@@ -293,6 +313,8 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                             estaKruskall += 1
                             posicaoTupla2 = posTupKrus
                             verticeNaoIncluido = tripla[1]
+                            # print("tripla[2], tripla[1], verTup: ", tripla[2], tripla[1], verTup)
+                            # print("posicaoTupla2: ", posicaoTupla2)
                             tupla2 = conjKruskall[posTupKrus]
                     posTupKrus += 1
                 
@@ -374,12 +396,20 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                     
                     #Em caso dos vertices estarem em dois conjuntos diferentes (uniao de conjunto)
                     if (estaKruskall == 2):
-                        #print("subConj: ", conjKruskall, "pos2: ", posicaoTupla2, " pos: ", posicaoTupla)
+                        # print("subConj: ", conjKruskall, " pos: ", posicaoTupla, "pos2: ", posicaoTupla2)
+                        # if (posicaoTupla2 is None) or (posicaoTupla is None):
+                        #     print("LAMBRECOU !!!")
+                        #     print("\n \n")
+                        #     break
                         conjArestasAgm.append((tripla[1], tripla[2]))
 
                         tupTemp = conjKruskall[posicaoTupla] + conjKruskall[posicaoTupla2]
+                        
+                        if (posicaoTupla < posicaoTupla2):
+                            posicaoTupla2 -= 1
+
                         del conjKruskall[posicaoTupla]
-                        del conjKruskall[posicaoTupla2]
+                        del conjKruskall[posicaoTupla2] #Como é uma lista o indice fica em uma pos-1
                         conjKruskall.append(tupTemp)
             
         count += 1
@@ -387,6 +417,7 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
         if (len(conjKruskall) == 1):
             krus = tuple(conjKruskall[0])
             if ( (len(krus)-1) == qntRegiao):
+                print("AQUI: ", qntRegiao)
                 agm = True
     
 
@@ -440,7 +471,7 @@ def main():
     confRegiao = [] # regiao/vertices
     demandaRegiao = [] # Demanda de cada regiao
 
-    with open('problema13.txt', 'r') as reader:
+    with open('problema22.txt', 'r') as reader:
         
         linha = reader.readline()
         while ( not ('SECTION' in linha ) ):
@@ -574,10 +605,13 @@ def main():
 
     #plot(grafo, layout = layout, bbox = (1000, 1000), margin = 0)
 
-    subG = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)[0]
-    vetQntReg = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)[1]
+    resulTupla = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)
+    subG = resulTupla[0]
+    vetQntReg = resulTupla[1]
 
-    agm = kruskall(subG[0], robotMap, confRegiao, vetQntReg[0], distMatriz)
+    agm = []
+    for i in range(len(subG)):
+        agm.append(kruskall(subG[i], robotMap, confRegiao, vetQntReg[i], distMatriz))
 
     #for i in range(len(subG)):
     #    subG[i] = kruskall(subG[i])
