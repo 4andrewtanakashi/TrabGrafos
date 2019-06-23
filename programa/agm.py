@@ -70,7 +70,7 @@ print("demandaRegiao:")
 for linha in demandaRegiao:
     print(linha)
 
-print("\nMatriz de distancias:\n")
+#print("\nMatriz de distancias:\n")
 
 #Matriz distancia--------------------------------------------------
 def dist (xA, xB, yA, yB):
@@ -92,19 +92,20 @@ for nPtoA in range(len(coordenandas)):
 
     distMatriz.append(linha)
 
+#for linha in distMatriz:
+#    for a in linha:
+#        print (a, end = "\t")
+#    print()
+
 
 
 #1º Passo: Ordenação de pesos de arestas:
-for linha in distMatriz:
-    for a in linha:
-        print (a, end = "\t")
-    print()
 
 conjOrd = []
 for i in range(len(distMatriz[0])):
     j = i + 1
     while j < (len(distMatriz[0])):
-        conjOrd.append( (distMatriz[i][j], i, j) )
+        conjOrd.append( (distMatriz[i][j], i+1, j+1) )
         j = j+1
 conjOrd.sort(key=lambda x: x[0])
 
@@ -136,8 +137,10 @@ while (len(conjVer) != robotMap[0]) and (k < len(conjOrd)):
 
     k = k+1
 
-print("\n \n ")
-print(conjVer)
+#print("\n \n ")
+#print(conjVer)
 
-for i in range(len(conjPosAres)):
-    print("Arestas: ", "(", conjOrd[conjPosAres[i]][1], ",", conjOrd[conjPosAres[i]][2], ")")
+#for i in range(len(conjPosAres)):
+#    print("Arestas: ", "(", conjOrd[conjPosAres[i]][1], ",", conjOrd[conjPosAres[i]][2], ")")
+
+
