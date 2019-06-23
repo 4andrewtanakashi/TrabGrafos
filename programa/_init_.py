@@ -528,27 +528,27 @@ def main():
         linha = reader.readline()
         while ( not ('SECTION' in linha ) ):
             if ( (not ('EDGE' in linha)) ):
-                numbers = re.findall(r"[-+]?\d*\.\d+|\d+", linha )
+                numbers = re.findall(r"[+-]?\d+(?:\.\d+)?", linha )
                 robotMap.append(int(numbers[0]))
             linha = reader.readline()
 
         linha = reader.readline()
         while ( not ('SET_SECTION' in linha) ):
-            numbers = re.findall(r"[-+]?\d*\.\d+|\d+", linha )
+            numbers = re.findall(r"[+-]?\d+(?:\.\d+)?", linha )
             numbers = [int(i) for i in numbers]
             coordenadas.append(numbers)
             linha = reader.readline()
 
         linha = reader.readline()
         while ( not ('DEMAND_SECTION' in linha) ):
-            numbers = re.findall(r"[+]?\d*\.\d+|\d+", linha )
+            numbers = re.findall(r"[+-]?\d+(?:\.\d+)?", linha )
             numbers = [int(i) for i in numbers]
             confRegiao.append(numbers)
             linha = reader.readline()
 
         linha = reader.readline()
         while ( linha != 'EOF' ):
-            numbers = re.findall(r"[+]?\d*\.\d+|\d+", linha )
+            numbers = re.findall(r"[+-]?\d+(?:\.\d+)?", linha )
             numbers = [int(i) for i in numbers]
             demandaRegiao.append(numbers)
             linha = reader.readline()
@@ -572,15 +572,16 @@ def main():
     # for linha in demandaRegiao:
     #     print(linha)
 
-    # print("\nMatriz de distancias:\n")
     '''
+    # print("\nMatriz de distancias:\n")
+
 
     #                                              [Montagem do Grafo]
     #################################################################################################################
 
     #Matriz distancia--------------------------------------------------
     def dist (xA, xB, yA, yB):
-        distancia = (((xA - xB) ** 2) + ((yA - yB) ** 2)) ** (1/2)
+        distancia = (((xB - xA) ** 2) + ((yB - yA) ** 2)) ** (1/2)
         return distancia
 
     distMatriz = []
@@ -604,6 +605,7 @@ def main():
             print (a, end = "\t")
         print()
     '''
+    print("Peso: ", distMatriz[79][27])
 
     #Criar grafo-------------------------------------------------------
     g = Grafo()
