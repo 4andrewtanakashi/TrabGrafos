@@ -1,3 +1,9 @@
+import re # Para extrair apenas numeros dos arquivos
+import math #Para usar ceil
+import sys #Para pegar o maior valor possivel
+import time #Medr tempo de execucao
+ # from igraph import *
+
 class Vertice:
     def __init__(self, pX, pY, id, gr):
         self.pX = pX
@@ -44,6 +50,13 @@ class Grafo(Vertice):
     
     def getConjArestas(self):
         return self.arestas
+    
+    def buscaAresta(self, tripla):
+        for e in self.arestas:
+            if ((e[1], e[2]) == (tripla[1], tripla[2]) ):
+                return True
+            elif ((e[2], e[1]) == (tripla[1], tripla[2])):
+                return True
 
     def addVertice(self, x, y, id, gr):
         self.vertices.append(Vertice(x, y, id, gr))
@@ -108,7 +121,7 @@ def dist (xA, xB, yA, yB):
 ################################Passo 0: Algoritmo baseado em Trim para separação de subgrafos
 #  de acordo com a demanda e a capacidade
 #de cada veiculo
-import math
+
 
 def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
     #Ordenacao Demanda--------------------------------------------
@@ -246,17 +259,6 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
     #1º Passo: Ordenação de pesos de arestas:
     grafoG.getConjArestas().sort(key=lambda x: x[0])
     #print(grafoG.getConjArestas())
-
-    #copyMatriz = grafoG.getConjArestas()
-    #conjOrd = []
-    #for i in range(len(copyMatriz[0])):
-    #    j = i + 1
-    #    while j < (len(copyMatriz[0])):
-    #        conjOrd.append( (copyMatriz[i][j], i+1, j+1) )
-    #        j = j+1
-    #conjOrd.sort(key=lambda x: x[0])
-    #print("Ordenação de peso: ", conjOrd)
-
 
     #2º Selecionar arestas de menor peso e nao coloca vértices pertencentes ao mesmo conjunto 
     #e elimina vertices que estão com o mesma regiao .
@@ -464,47 +466,81 @@ def casamentoPerfeito(agm, distMatriz):
     #     print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
     # print("ConjArestassaasd: ", agm.getConjArestas())
 
+    #Pega Vertices de grau impar
     listaVertGrauImpar = []
     for i in range(agm.getCarV()):
         if ((agm.getVertice(i).getGrau())%2 == 1 ):
             listaVertGrauImpar.append(agm.getVertice(i).getId())
 
-    listaArestasDoCasa = []
     # print("TAM:", len(listaVertGrauImpar))
     # print("lista de vert impar: ", listaVertGrauImpar)
-    i = 0
-    while ( (listaVertGrauImpar != []) and (i < len(listaVertGrauImpar)) ) :
-        menorValor = 0
-        comparador = 0
-        j = i+1
-        pos = 0
-        u = listaVertGrauImpar[i]
-        while j < len(listaVertGrauImpar):
-            v = listaVertGrauImpar[j]
-            comparador = distMatriz[u-1][v-1] #Posicao de matriz gaussiana
-            if (menorValor < comparador):
-                pos = j
-                menorValor = comparador
-            j += 1
 
-        vert = listaVertGrauImpar[pos]
-        #print("Tripĺa: ", (menorValor, u, vert))
-        listaArestasDoCasa.append((menorValor, u, vert))
-        agm.aumentarGrau(u)
-        agm.aumentarGrau(vert)
-        listaVertGrauImpar.remove(u)
-        listaVertGrauImpar.remove(vert)
-    
-    print("\n \n")
-    print("Arestas: ", listaArestasDoCasa)
-    
-    for a in listaArestasDoCasa:
-        
+    #Organizar em subconjuntos possiveis ligacoes:
+    i = 0
+    listaPossLig = []
+    while i < len(listaVertGrauImpar):
+        j = i+1
+        while j < len(listaVertGrauImpar):
+            triplaImpar = (distMatriz[listaVertGrauImpar[i]-1][listaVertGrauImpar[j]-1], listaVertGrauImpar[i], listaVertGrauImpar[j])
+            triplaImpar2 = (triplaImpar[0], triplaImpar[2], triplaImpar[1]) 
+            if (not agm.buscaAresta(triplaImpar)) and (not(agm.buscaAresta(triplaImpar2))):
+                if (not triplaImpar in listaPossLig):
+                    
+                    listaPossLig.append(triplaImpar)
+                
+            j += 1
+        i += 1
+
+    # for k in listaPossLig:
+    #     print("aretas: ", k)
+
+
+     
+    listaArestasDoCasa = []
+    menorValor = sys.maxsize # Maior valor possivel
+    backup = 0
+    elerm = listaPossLig[0]
+    while ( listaPossLig != []  ) :
+
+        for ele in listaPossLig:
+            #print("Valore ele: ", ele, " ", "menorValor: ", menorValor)
+            if (ele[0] < menorValor):
+                elerm = ele
+                menorValor = ele[0]
+
+        if (backup != menorValor):
+            # print("VALOR: ", menorValor)
+            # print("elementos: ", elerm)
+            listaArestasDoCasa.append(elerm)
+            agm.aumentarGrau(elerm[1])
+            agm.aumentarGrau(elerm[2])
+            backup = menorValor
+
+        menorValor = sys.maxsize
+        i = 0
+        while ((listaPossLig != []) and (i < len(listaPossLig))):
+            # print(" jsahdjhsadj ", listaPossLig[i][1] )
+            # print(" jsahdjhsadj ", listaPossLig[i][2] )
+            # print("elerm[1]: ", elerm[1])
+            if ( (listaPossLig[i][1] == elerm[1]) or ((listaPossLig[i][2] == elerm[1]))):
+                # print("Arestas: ", listaPossLig[i][1])
+                listaPossLig.remove(listaPossLig[i])
+                if (listaPossLig != []):
+                    i = 0
+            elif ( (listaPossLig[i][1] == elerm[2]) or ((listaPossLig[i][2] == elerm[2]))):
+                # print("Arestas: ", listaPossLig[i][1])
+                listaPossLig.remove(listaPossLig[i])
+                if (listaPossLig != []):
+                    i = 0
+            i += 1
+ 
+    for a in listaArestasDoCasa: 
         agm.setAresta(a)
     
-    print("ArestasAgm: ", agm.getConjArestas())
-    for i in agm.vertices:
-        print("Grau2: ", i.getGrau(), " ", "id2: ", i.getId())
+    # print("arestas Escolhidas: ", listaArestasDoCasa)
+    # print("ArestasAgm: ", agm.getConjArestas())
+    # for i in agm.vertices:
+    #     print("Grau2: ", i.getGrau(), " ", "id2: ", i.getId())
     return agm 
 
 
@@ -512,12 +548,12 @@ def casamentoPerfeito(agm, distMatriz):
 
 ######################################################[CircuitoEuleriano]########################
 def circuitoEuleriano (eulerG):
-    print("Arestassadsad: ", eulerG.arestas)
-    ordArestas = eulerG.getConjArestas()
-    
-    
+   
+    ordArestas = []
+    for n in eulerG.getConjArestas(): # Python as variaveis recebem referencias e nao copia uma ED por atriuicao
+        ordArestas.append(n)
+
     ordArestas.sort(key = lambda x: x[1])
-    print("Conj Ares:", ordArestas)
     circuitoEuler = []
     circuitoEuler.append(ordArestas[0][1])
     buscar = ordArestas[0][2]
@@ -544,31 +580,41 @@ def circuitoEuleriano (eulerG):
     
     eulerG.setConjVert(circuitoEuler)
    
-    print("Circuito: ", eulerG.vertices)
+    # print("Circuito: ", eulerG.vertices)
+    # print("Arestassadsad: ", eulerG.arestas)
     
-
     return eulerG
 
 ##########################################################################
 
 ######################################[Passo ultimo: remover]##############################################################
 
-def removerRepetidos (grafo):
+def removerRepetidos (grafo, distM):
     vertices = grafo.getVertices()
-    posA = 1
 
-    while posA < (len(vertices) - 1):
-        posB = 0
-        while posB < len(vertices):
-            if posA != posB:
-                if vertices[posA] == vertices[posB]:
-                    del vertices[posB]
-            posB += 1
-        posA += 1
+    conj = set()
+    unicos = []
+    for v in vertices:
+        if v not in conj:
+            unicos.append(v)
+            conj.add(v)
     
-    grafo.setConjVert(vertices)
+    unicos.append(vertices[0])
+    grafo.setConjVert(unicos)
 
-    return grafo
+    listaVert = grafo.getVertices()
+    listaAresta = []
+    somatorioCusto = 0
+    for i in range(len(listaVert)):
+        j = i+1
+        if (j < len(listaVert)):
+            listaAresta.append((distM[listaVert[i]-1][listaVert[j]-1], listaVert[i], listaVert[j]))
+            somatorioCusto += distM[listaVert[i]-1][listaVert[j]-1]
+            # print("Arestas: ", distM[listaVert[i]-1][listaVert[j]-1], listaVert[i], listaVert[j])
+
+    grafo.setAresta(listaAresta)
+
+    return (grafo, somatorioCusto)
 
 ########################################################################################################################
 
@@ -578,15 +624,14 @@ def removerRepetidos (grafo):
     #                                       [Tarefa1: Extracao de dados]
  #######################################################################################################################
 def main():
-
-    import re
-
+    inicio = time.time()
     robotMap = [] # robotMap[0]=qntVert robotMap[1]=qntVeic robotMap[2]=qntRegiao robotMap[3]=CapDeCaRobo
     coordenadas = [] # Coordenas de cada Vertices
     confRegiao = [] # regiao/vertices
     demandaRegiao = [] # Demanda de cada regiao
 
-    with open('problema15.txt', 'r') as reader:
+    nomeArq = input("Digite o nome do arquivo: ")
+    with open(nomeArq+'.txt', 'r') as reader:
         
         linha = reader.readline()
         while ( not ('SECTION' in linha ) ):
@@ -692,7 +737,6 @@ def main():
    
 
     #Desenhar grafo----------------------------------------------------
-    # from igraph import *
 
     # grafo = Graph.Ring(len(coordenadas), circular=False)
 
@@ -727,6 +771,7 @@ def main():
     casPer = []
     listCir = []
     hamil = []
+    custo = 0
     for i in range(len(subG)):
         tempFor = kruskall(subG[i], robotMap, confRegiao, vetQntReg[i], distMatriz)
         agm.append(tempFor)
@@ -738,15 +783,16 @@ def main():
         tempFor2 = circuitoEuleriano(casPer[i])
         listCir.append(tempFor2)
 
-        tempFor4 = removerRepetidos(listCir[i])
-        hamil.append(tempFor4)
+        tempFor4 = removerRepetidos(listCir[i], distMatriz)
+        custo += tempFor4[1]
+        hamil.append(tempFor4[0])
     
-    for j in casPer:
-        print("ConjArestas: ", j.getConjArestas())
-    
+    j = 1
     for i in listCir:
-        print("Caminho: ", i.vertices)
-        print("\n")
+        print("Caminho", j, ": ", i.vertices)
+        j += 1
+    fim = time.time()
+    print(nomeArq, "",custo, "", fim - inicio)
 
 
 if __name__ == "__main__":
