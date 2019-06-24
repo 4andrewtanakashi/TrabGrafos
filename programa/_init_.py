@@ -61,12 +61,18 @@ class Grafo(Vertice):
         pos -= 1
         return self.vertices[pos]
     
+    def getVertices(self):
+        return self.vertices
+    
     def getVerticeId(self, id):
         for v in self.vertices:
             if (v.getId() == id):
                 return v
         #print("AQUI: ", id) 
         return False
+
+    def setConjVert(self, listaV):
+        self.vertices = listaV
     
     def getCarV(self):
         return self.cardV
@@ -90,25 +96,10 @@ class Grafo(Vertice):
         grau += 1
         self.getVerticeId(id).setGrau(grau)
 
-# class Grafo:
-#     def __init__(self, arestas):
-#         self.arestas = arestas
-    
-#     def getAresta(self, pos):
-#         return self.arestas[pos]
 
-# class Vertice:
-#     def __init__(self, pX, pY, regiao):
-#         self.pX = pX
-#         self.pY = pY
-#         self.regiao = regiao
-    
-#     def getRegi(self):
-#         return self.regiao
-    
-#     def getCoordenada(self):
-#         return (self.pX, self.pY)
-
+def dist (xA, xB, yA, yB):
+        distancia = (((xB - xA) ** 2) + ((yB - yA) ** 2)) ** (1/2)
+        return distancia
 
 
 #                                                 [Tarefa2: Algoritmo]
@@ -192,7 +183,7 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
             vetCapRobot.append(regioesVisita)
 
     
-    print ("vetRobo: ", vetCapRobot)
+    #print ("vetRobo: ", vetCapRobot)
 
 
     #Montando os subgrafos:
@@ -471,6 +462,7 @@ def casamentoPerfeito(agm, distMatriz):
     # print("\n \n")
     # for i in agm.vertices:
     #     print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
+    # print("ConjArestassaasd: ", agm.getConjArestas())
 
     listaVertGrauImpar = []
     for i in range(agm.getCarV()):
@@ -496,6 +488,7 @@ def casamentoPerfeito(agm, distMatriz):
             j += 1
 
         vert = listaVertGrauImpar[pos]
+        #print("Tripĺa: ", (menorValor, u, vert))
         listaArestasDoCasa.append((menorValor, u, vert))
         agm.aumentarGrau(u)
         agm.aumentarGrau(vert)
@@ -506,14 +499,81 @@ def casamentoPerfeito(agm, distMatriz):
     print("Arestas: ", listaArestasDoCasa)
     
     for a in listaArestasDoCasa:
+        
         agm.setAresta(a)
     
     print("ArestasAgm: ", agm.getConjArestas())
+    for i in agm.vertices:
+        print("Grau2: ", i.getGrau(), " ", "id2: ", i.getId())
+    return agm 
 
 
 ##################################################################################################################
 
+######################################################[CircuitoEuleriano]########################
+def circuitoEuleriano (eulerG):
+    print("Arestassadsad: ", eulerG.arestas)
+    ordArestas = eulerG.getConjArestas()
+    
+    
+    ordArestas.sort(key = lambda x: x[1])
+    print("Conj Ares:", ordArestas)
+    circuitoEuler = []
+    circuitoEuler.append(ordArestas[0][1])
+    buscar = ordArestas[0][2]
+    verInicio = ordArestas[0][1]
+    del ordArestas[0]
+    while (buscar != verInicio):
+        
+        i = 0
+        while (i < len(ordArestas)):
 
+        
+            if (buscar == ordArestas[i][1]) :
+                circuitoEuler.append(buscar)
+                buscar = ordArestas[i][2]
+                del ordArestas[i]
+            elif (buscar == ordArestas[i][2]):
+                circuitoEuler.append(buscar)
+                buscar = ordArestas[i][1]
+                del ordArestas[i]
+            i += 1
+        #print(ordArestas)
+    circuitoEuler.append(verInicio)
+    
+    
+    eulerG.setConjVert(circuitoEuler)
+   
+    print("Circuito: ", eulerG.vertices)
+    
+
+    return eulerG
+
+##########################################################################
+
+######################################[Passo ultimo: remover]##############################################################
+
+def removerRepetidos (grafo):
+    vertices = grafo.getVertices()
+    posA = 1
+
+    while posA < (len(vertices) - 1):
+        posB = 0
+        while posB < len(vertices):
+            if posA != posB:
+                if vertices[posA] == vertices[posB]:
+                    del vertices[posB]
+            posB += 1
+        posA += 1
+    
+    grafo.setConjVert(vertices)
+
+    return grafo
+
+########################################################################################################################
+
+
+    
 
     #                                       [Tarefa1: Extracao de dados]
  #######################################################################################################################
@@ -526,7 +586,7 @@ def main():
     confRegiao = [] # regiao/vertices
     demandaRegiao = [] # Demanda de cada regiao
 
-    with open('problema22.txt', 'r') as reader:
+    with open('problema15.txt', 'r') as reader:
         
         linha = reader.readline()
         while ( not ('SECTION' in linha ) ):
@@ -583,9 +643,7 @@ def main():
     #################################################################################################################
 
     #Matriz distancia--------------------------------------------------
-    def dist (xA, xB, yA, yB):
-        distancia = (((xB - xA) ** 2) + ((yB - yA) ** 2)) ** (1/2)
-        return distancia
+    
 
     distMatriz = []
     for nPtoA in range(len(coordenadas)):
@@ -666,13 +724,29 @@ def main():
     vetQntReg = resulTupla[1]
 
     agm = []
+    casPer = []
+    listCir = []
+    hamil = []
     for i in range(len(subG)):
-        agm.append(kruskall(subG[i], robotMap, confRegiao, vetQntReg[i], distMatriz))
-        casamentoPerfeito(agm[i], distMatriz)
-    
+        tempFor = kruskall(subG[i], robotMap, confRegiao, vetQntReg[i], distMatriz)
+        agm.append(tempFor)
 
-    #for i in range(len(subG)):
-    #    subG[i] = kruskall(subG[i])
+        tempFor1 = casamentoPerfeito(agm[i], distMatriz)
+        casPer.append(tempFor1)
+       
+
+        tempFor2 = circuitoEuleriano(casPer[i])
+        listCir.append(tempFor2)
+
+        tempFor4 = removerRepetidos(listCir[i])
+        hamil.append(tempFor4)
+    
+    for j in casPer:
+        print("ConjArestas: ", j.getConjArestas())
+    
+    for i in listCir:
+        print("Caminho: ", i.vertices)
+        print("\n")
 
 
 if __name__ == "__main__":
