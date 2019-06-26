@@ -81,7 +81,6 @@ class Grafo(Vertice):
         for v in self.vertices:
             if (v.getId() == id):
                 return v
-        #print("AQUI: ", id) 
         return False
 
     def setConjVert(self, listaV):
@@ -137,19 +136,6 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
     demandaTupla.sort(key=lambda x: x[1])
     demandaTupla.reverse()
     
-    # print()
-    # print ("demandaTupla: ", demandaTupla)
-    
-
-    # somatorio = 0
-    # for i in demandaRegiao:
-    #     somatorio += i[1]
-    #capMinRobo = math.ceil(somatorio/robotMap[1])
-
-    
-    #print("Somatorio: ", somatorio)
-    # print("Capacidade Minima veiculo: ", capMinRobo )
-    
 
     #Algoritmo separa regiao para robos
     vetCapRobot = []
@@ -162,7 +148,7 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
             somatorioDemanda = 0
             demanda = 0
 
-            # while capMinimaAtingida and len(demandaTupla) > demanda:
+
             while ( (len(demandaTupla) > demanda)  and (not capMinimaAtingida)) :
                 teste = somatorioDemanda + demandaTupla[demanda][1]
                 if (teste <= robotMap[3]):
@@ -170,11 +156,9 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
                     regioesVisita.append(demandaTupla[demanda])
                     del(demandaTupla[demanda])
                     demanda -= 1
-                    #(teste > robotMap[3]+1) or 
+                   
                 elif (( (len(demandaTupla)-1) == demanda )):
-                    # print("(len(demandaTupla) < demanda): ", (len(demandaTupla) < demanda))
-                    # print("(teste > robotMap[3]+1): ", (teste > robotMap[3]+1))
-                    #print("somatorioDemanda: ", somatorioDemanda-demandaTupla[demanda][1])
+                   
                     capMinimaAtingida = True
                 elif (((teste - demandaTupla[demanda][1]) < robotMap[3]+1)):
                     restante = robotMap[3] - somatorioDemanda
@@ -182,8 +166,7 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
                     ind = 0
                     while (ind < (len(demandaTupla)-1) and (not satisfeito)):
                         if (demandaTupla[ind][1] <= restante):
-                            # print("somatorioDemanda_ult: ", somatorioDemanda)
-                            # print("Restante: ", restante, " demandaTupla[1]: ", demandaTupla[ind][1])
+                            
                             somatorioDemanda += demandaTupla[ind][1]
                             regioesVisita.append(demandaTupla[ind])
                             demandaTupla.remove(demandaTupla[ind])
@@ -195,10 +178,7 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
 
             vetCapRobot.append(regioesVisita)
 
-    
-    #print ("vetRobo: ", vetCapRobot)
-
-
+  
     #Montando os subgrafos:
     subConjG = []
     for i in range(robotMap[1]):
@@ -230,20 +210,12 @@ def subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g):
                 v -= 1 #Para acessar Id no grafo é direto, mas acessar em uma ED é gaussiano
                 triplaRegUV.append( (subConjG[qntSub].getConjArestas()[u][v], u+1, v+1) )
                 j += 1
-        #print("triplaRegUV", qntSub, ": ", triplaRegUV)
+     
         listaDeTripla.append(triplaRegUV)
 
     for i in range(len(listaDeTripla)):
         subConjG[i].setArestas(listaDeTripla[i])
 
-    '''
-    for i in range(subConjG[qntSub].cardV) :
-        print("v: ", subConjG[qntSub].getVertice(i).getId())
-    '''
-    #print("Tripla: ", triplaRegUV)
-    '''
-    print("TAM: ", len(subConjG))
-    '''
     vetQntRegiao = []
     for robo in vetCapRobot:
         vetQntRegiao.append(len(robo))
@@ -258,7 +230,7 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
 
     #1º Passo: Ordenação de pesos de arestas:
     grafoG.getConjArestas().sort(key=lambda x: x[0])
-    #print(grafoG.getConjArestas())
+
 
     #2º Selecionar arestas de menor peso e nao coloca vértices pertencentes ao mesmo conjunto 
     #e elimina vertices que estão com o mesma regiao .
@@ -297,8 +269,7 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                             estaKruskall += 1
                             posicaoTupla = posTupKrus
                             verticeNaoIncluido = tripla[2]
-                            # print("tripla[1],tripla[2], verTup: ", tripla[1], tripla[2], verTup)
-                            # print("posicaoTupla: ", posicaoTupla)
+                           
                             tupla1 = conjKruskall[posTupKrus]
                     posTupKrus += 1
 
@@ -310,8 +281,7 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                             estaKruskall += 1
                             posicaoTupla2 = posTupKrus
                             verticeNaoIncluido = tripla[1]
-                            # print("tripla[2], tripla[1], verTup: ", tripla[2], tripla[1], verTup)
-                            # print("posicaoTupla2: ", posicaoTupla2)
+                            
                             tupla2 = conjKruskall[posTupKrus]
                     posTupKrus += 1
                 
@@ -342,7 +312,6 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                         while i < (len(confRegiao[regiao1])-1):
                             idEli = confRegiao[regiao1][i]
                             if ((tripla[1] != idEli) and ( not (idEli in conjEliminados) ) and (not (idEli in unicaTupla) )):
-                                #print("idEli1_0: ", idEli, "verticeNaoIncluido: ", tripla[1], "regiao: ", regiao1)
                                 conjEliminados.append(idEli)
                             i += 1
 
@@ -350,7 +319,6 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                         while i < (len(confRegiao[regiao2])-1):
                             idEli = confRegiao[regiao2][i]
                             if (tripla[2] != idEli and ( not (idEli in conjEliminados)) and (not (idEli in unicaTupla) )):
-                                #print("idEli2_0: ", idEli, "verticeNaoIncluido: ", tripla[2], "regiao: ", regiao2)
                                 conjEliminados.append(idEli)
                             i += 1
 
@@ -358,18 +326,14 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                     if (estaKruskall == 1) :
                         
                         if (not (posicaoTupla is None)):
-                            # print("posicaoTupla: ", posicaoTupla)
-                            # print("posicaoTupla2: ", posicaoTupla2)
-                            # print("conjKruskall[posicaoTupla2] + (verticeNaoIncluido,): ", conjKruskall, verticeNaoIncluido)
+                      
                             tupTemp = conjKruskall[posicaoTupla] + (verticeNaoIncluido,)
                             del conjKruskall[posicaoTupla]
                             conjKruskall.append(tupTemp)
                             conjArestasAgm.append((tripla[1], verticeNaoIncluido))
 
                         else:
-                            # print("posicaoTupla_2: ", posicaoTupla)
-                            # print("posicaoTupla2_2: ", posicaoTupla2)
-                            # print("conjKruskall[posicaoTupla2] + (verticeNaoIncluido,)_2: ", conjKruskall, verticeNaoIncluido)
+                           
                             tupTemp = conjKruskall[posicaoTupla2] + (verticeNaoIncluido,)
                             del conjKruskall[posicaoTupla2]
                             conjKruskall.append(tupTemp)
@@ -387,17 +351,13 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
                         while i < (len(confRegiao[regiao])-1):
                             idEli = confRegiao[regiao][i]
                             if (verticeNaoIncluido != idEli and (not (idEli in conjEliminados)) and (not (idEli in unicaTupla) )):
-                                #print("idEli_1: ", idEli, "verticeNaoIncluido: ", verticeNaoIncluido, "regiao: ", regiao)
+                                
                                 conjEliminados.append(idEli)
                             i += 1
                     
                     #Em caso dos vertices estarem em dois conjuntos diferentes (uniao de conjunto)
                     if (estaKruskall == 2):
-                        # print("subConj: ", conjKruskall, " pos: ", posicaoTupla, "pos2: ", posicaoTupla2)
-                        # if (posicaoTupla2 is None) or (posicaoTupla is None):
-                        #     print("LAMBRECOU !!!")
-                        #     print("\n \n")
-                        #     break
+                        
                         conjArestasAgm.append((tripla[1], tripla[2]))
 
                         tupTemp = conjKruskall[posicaoTupla] + conjKruskall[posicaoTupla2]
@@ -414,18 +374,9 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
         if (len(conjKruskall) == 1):
             krus = tuple(conjKruskall[0])
             if ( (len(krus)-1) == qntRegiao):
-                # print("AQUI: ", qntRegiao)
+                
                 agm = True
     
-
-    # print("qntRegiao: ", qntRegiao)
-    # print("AGM: ", conjKruskall)
-    # print("Eliminados: ", conjEliminados)
-    # print("Aresta Ligadas: ", conjArestasAgm)
-    # conjKruskall = tuple(conjKruskall[0])
-    # for i in conjKruskall:
-    #     print("Regiao: ", grafoG.getVerticeId(i).getRegiao())
-
     for v in conjEliminados:
         grafoG.delVertiveId(v)
 
@@ -441,16 +392,11 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
         grafoG.setGrauVert(v+1, 0)
     grafoG.setArestas(arestasAgm)
 
-    # print("Aresta Ligadas: ", grafoG.getConjArestas())
-
+   
     for tup in conjArestasAgm:
         for v in tup:
             grafoG.aumentarGrau(v)
     
-    # for i in grafoG.vertices:
-    #     print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
-    
-    # print("Conj Aresta: ", grafoG.getConjArestas())
 
     return grafoG
 
@@ -461,19 +407,11 @@ def kruskall(grafoG, robotMap, confRegiao, qntRegiao, distMatriz):
 
 def casamentoPerfeito(agm, distMatriz):
 
-    # print("\n \n")
-    # for i in agm.vertices:
-    #     print("Grau: ", i.getGrau(), " ", "id: ", i.getId())
-    # print("ConjArestassaasd: ", agm.getConjArestas())
-
     #Pega Vertices de grau impar
     listaVertGrauImpar = []
     for i in range(agm.getCarV()):
         if ((agm.getVertice(i).getGrau())%2 == 1 ):
             listaVertGrauImpar.append(agm.getVertice(i).getId())
-
-    # print("TAM:", len(listaVertGrauImpar))
-    # print("lista de vert impar: ", listaVertGrauImpar)
 
     #Organizar em subconjuntos possiveis ligacoes:
     i = 0
@@ -485,32 +423,27 @@ def casamentoPerfeito(agm, distMatriz):
             triplaImpar2 = (triplaImpar[0], triplaImpar[2], triplaImpar[1]) 
             if (not agm.buscaAresta(triplaImpar)) and (not(agm.buscaAresta(triplaImpar2))):
                 if (not triplaImpar in listaPossLig):
-                    
                     listaPossLig.append(triplaImpar)
-                
             j += 1
         i += 1
+    
+    #NOVO
+    tamConj = len(listaVertGrauImpar)
 
-    # for k in listaPossLig:
-    #     print("aretas: ", k)
-
-
-     
     listaArestasDoCasa = []
     menorValor = sys.maxsize # Maior valor possivel
     backup = 0
-    elerm = listaPossLig[0]
+    if (listaPossLig != []):
+        elerm = listaPossLig[0]
     while ( listaPossLig != []  ) :
 
         for ele in listaPossLig:
-            #print("Valore ele: ", ele, " ", "menorValor: ", menorValor)
+       
             if (ele[0] < menorValor):
                 elerm = ele
                 menorValor = ele[0]
 
         if (backup != menorValor):
-            # print("VALOR: ", menorValor)
-            # print("elementos: ", elerm)
             listaArestasDoCasa.append(elerm)
             agm.aumentarGrau(elerm[1])
             agm.aumentarGrau(elerm[2])
@@ -519,28 +452,40 @@ def casamentoPerfeito(agm, distMatriz):
         menorValor = sys.maxsize
         i = 0
         while ((listaPossLig != []) and (i < len(listaPossLig))):
-            # print(" jsahdjhsadj ", listaPossLig[i][1] )
-            # print(" jsahdjhsadj ", listaPossLig[i][2] )
-            # print("elerm[1]: ", elerm[1])
             if ( (listaPossLig[i][1] == elerm[1]) or ((listaPossLig[i][2] == elerm[1]))):
-                # print("Arestas: ", listaPossLig[i][1])
                 listaPossLig.remove(listaPossLig[i])
                 if (listaPossLig != []):
-                    i = 0
+                    #NOVO
+                    i = -1
             elif ( (listaPossLig[i][1] == elerm[2]) or ((listaPossLig[i][2] == elerm[2]))):
-                # print("Arestas: ", listaPossLig[i][1])
                 listaPossLig.remove(listaPossLig[i])
                 if (listaPossLig != []):
-                    i = 0
+                    #NOVO
+                    i = -1
             i += 1
- 
-    for a in listaArestasDoCasa: 
-        agm.setAresta(a)
     
-    # print("arestas Escolhidas: ", listaArestasDoCasa)
-    # print("ArestasAgm: ", agm.getConjArestas())
-    # for i in agm.vertices:
-    #     print("Grau2: ", i.getGrau(), " ", "id2: ", i.getId())
+    #NOVOs
+    listaVertGrauImpar = []
+    if ((tamConj/2) != len(listaArestasDoCasa)):
+        for i in range(agm.getCarV()):
+            if ((agm.getVertice(i).getGrau())%2 == 1 ):
+                listaVertGrauImpar.append(agm.getVertice(i).getId())
+        j = 0
+        k = j+1 
+        while (listaVertGrauImpar != []) :
+            triplaImpar = (distMatriz[listaVertGrauImpar[j]-1][listaVertGrauImpar[k]-1], listaVertGrauImpar[j], listaVertGrauImpar[k])
+            listaArestasDoCasa.append(triplaImpar)
+            agm.aumentarGrau(triplaImpar[1])
+            agm.aumentarGrau(triplaImpar[2])
+            listaVertGrauImpar.remove(triplaImpar[1])
+            listaVertGrauImpar.remove(triplaImpar[2])
+            j = 0
+            k = j+1
+    ###
+
+    for a in listaArestasDoCasa:
+        agm.setAresta(a)
+   
     return agm 
 
 
@@ -552,36 +497,36 @@ def circuitoEuleriano (eulerG):
     ordArestas = []
     for n in eulerG.getConjArestas(): # Python as variaveis recebem referencias e nao copia uma ED por atriuicao
         ordArestas.append(n)
-
     ordArestas.sort(key = lambda x: x[1])
+
     circuitoEuler = []
     circuitoEuler.append(ordArestas[0][1])
     buscar = ordArestas[0][2]
     verInicio = ordArestas[0][1]
     del ordArestas[0]
-    while (buscar != verInicio):
-        
-        i = 0
-        while (i < len(ordArestas)):
 
-        
+    while ((ordArestas != [])):
+        i = 0
+        while ( i < len(ordArestas)):
             if (buscar == ordArestas[i][1]) :
                 circuitoEuler.append(buscar)
                 buscar = ordArestas[i][2]
+                
                 del ordArestas[i]
             elif (buscar == ordArestas[i][2]):
                 circuitoEuler.append(buscar)
                 buscar = ordArestas[i][1]
                 del ordArestas[i]
+           #NOVO
+            elif ((buscar == verInicio) and ((ordArestas) != [])):
+                 buscar = ordArestas[0][1]
+                 verInicio = buscar 
             i += 1
-        #print(ordArestas)
     circuitoEuler.append(verInicio)
     
     
     eulerG.setConjVert(circuitoEuler)
    
-    # print("Circuito: ", eulerG.vertices)
-    # print("Arestassadsad: ", eulerG.arestas)
     
     return eulerG
 
@@ -610,8 +555,7 @@ def removerRepetidos (grafo, distM):
         if (j < len(listaVert)):
             listaAresta.append((distM[listaVert[i]-1][listaVert[j]-1], listaVert[i], listaVert[j]))
             somatorioCusto += distM[listaVert[i]-1][listaVert[j]-1]
-            # print("Arestas: ", distM[listaVert[i]-1][listaVert[j]-1], listaVert[i], listaVert[j])
-
+            
     grafo.setAresta(listaAresta)
 
     return (grafo, somatorioCusto)
@@ -630,9 +574,11 @@ def main():
     confRegiao = [] # regiao/vertices
     demandaRegiao = [] # Demanda de cada regiao
 
-    nomeArq = input("Digite o nome do arquivo: ")
-    with open(nomeArq+'.txt', 'r') as reader:
-        
+    nomeArq = "problema"
+    numArq = input("Digite o numero do problema do arquivo: ")
+    with open(nomeArq+numArq+'.txt', 'r') as reader:
+        nomeArq += numArq
+
         linha = reader.readline()
         while ( not ('SECTION' in linha ) ):
             if ( (not ('EDGE' in linha)) ):
@@ -662,26 +608,6 @@ def main():
             linha = reader.readline()
 
         reader.close()
-    '''
-    # print("Detalhes: ", robotMap)
-    # print("\n")
-
-    # print("coordenadas:")
-    # for linha in coordenadas:
-    #     print(linha)
-
-    # print("\n")
-    # print("Configuracao de regiao:")
-    # for linha in confRegiao:
-    #     print (linha)
-
-    # print("\n")
-    # print("demandaRegiao:")
-    # for linha in demandaRegiao:
-    #     print(linha)
-
-    '''
-    # print("\nMatriz de distancias:\n")
 
 
     #                                              [Montagem do Grafo]
@@ -705,12 +631,6 @@ def main():
 
         distMatriz.append(linha)
 
-    '''
-    for linha in distMatriz:
-        for a in linha:
-            print (a, end = "\t")
-        print()
-    '''
 
     #Criar grafo-------------------------------------------------------
     g = Grafo()
@@ -728,40 +648,6 @@ def main():
 
     #Adicionando arestas e pesos:
     g.setArestas(distMatriz)
-
-    '''
-    print("(x,y): ", g.getVertice(5).getCoordenadas())
-    print("ID: ", g.getVertice(5).getId())
-    print("Regiao: ", g.getVertice(5).getRegiao())
-    '''
-   
-
-    #Desenhar grafo----------------------------------------------------
-
-    # grafo = Graph.Ring(len(coordenadas), circular=False)
-
-    # layout = []
-    # for vertice in coordenadas:
-    #     x = vertice[1]
-    #     y = vertice[2]
-    #     layout.append((x,y))
-
-    # arestas = []
-    # for i in range(len(coordenadas)):
-    #     j = i + 1 
-    #     while j < len(coordenadas):
-    #         arestas.append((i,j))
-    #         j += 1
-
-    # grafo.add_edges(arestas)
-
-    # nome = []
-    # for i in range(len(coordenadas)):
-    #     nome.append(i + 1)
-
-    # grafo.vs["name"] = nome
-
-    #plot(grafo, layout = layout, bbox = (1000, 1000), margin = 0)
 
     resulTupla = subgrafosVeiculos(demandaRegiao, robotMap, confRegiao, g)
     subG = resulTupla[0]
@@ -787,10 +673,10 @@ def main():
         custo += tempFor4[1]
         hamil.append(tempFor4[0])
     
-    j = 1
+  
     for i in listCir:
-        print("Caminho", j, ": ", i.vertices)
-        j += 1
+        print(i.vertices)
+    
     fim = time.time()
     print(nomeArq, "",custo, "", fim - inicio)
 
